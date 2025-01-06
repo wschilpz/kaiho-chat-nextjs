@@ -4,11 +4,12 @@ import { genSaltSync, hashSync } from 'bcrypt-ts';
 import { and, asc, desc, eq, gt, gte } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { DataAPIClient } from "@datastax/astra-db-ts";
 
 import {
-  user,
+  //user,
   chat,
-  type User,
+  User,
   document,
   type Suggestion,
   suggestion,
@@ -26,9 +27,14 @@ import { BlockKind } from '@/components/block';
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
 
+const astraClient = new DataAPIClient(process.env.ASTRA_TOKEN);
+const astraDb = astraClient.db('https://8d5d5e48-0dec-4467-9bc9-cb125971d4d4-us-east-2.apps.astra.datastax.com', { keyspace: "default_keyspace" });
+
 export async function getUser(email: string): Promise<Array<User>> {
   try {
-    return await db.select().from(user).where(eq(user.email, email));
+    //return await db.select().from(user).where(eq(user.email, email));
+    const cursor = await astraDb.collection<User>("users").find({ email: email });
+    return cursor.toArray();
   } catch (error) {
     console.error('Failed to get user from database');
     throw error;
@@ -40,7 +46,7 @@ export async function createUser(email: string, password: string) {
   const hash = hashSync(password, salt);
 
   try {
-    return await db.insert(user).values({ email, password: hash });
+    return await astraDb.collection<User>("users").insertOne({ email, password: hash });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
