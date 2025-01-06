@@ -46,7 +46,7 @@ export async function createUser(email: string, password: string) {
   const hash = hashSync(password, salt);
 
   try {
-    return await astraDb.collection<User>("users").insertOne({ email, password: hash });
+    return await astraDb.collection<User>("users").insertOne({ email: email, password: hash });
   } catch (error) {
     console.error('Failed to create user in database');
     throw error;
