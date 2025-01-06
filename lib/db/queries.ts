@@ -32,7 +32,7 @@ const astraDb = astraClient.db('https://8d5d5e48-0dec-4467-9bc9-cb125971d4d4-us-
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
-    console.log("get user with Astra");
+    console.log(`get user with Astr ${process.env.ASTRA_TOKEN}`);
     //return await db.select().from(user).where(eq(user.email, email));
     const cursor = await astraDb.collection<User>("users").find({ email: email });
     return cursor.toArray();
